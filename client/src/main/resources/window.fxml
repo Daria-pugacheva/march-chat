@@ -5,20 +5,15 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.PasswordField?>
 <VBox fx:controller="ru.geekbrains.march.chat.client.Controller"
       xmlns:fx="http://javafx.com/fxml" alignment="center">
     <HBox fx:id="loginPanel">
-        <TextField fx:id="usernameField" HBox.hgrow="ALWAYS" promptText="Укажите ваш ник" onAction="#login"/>
+        <TextField fx:id="loginField" HBox.hgrow="ALWAYS" promptText="Введите логин" onAction="#login"/>
+        <PasswordField fx:id="passwordField" HBox.hgrow="ALWAYS" promptText="Введите пароль" onAction="#login"/>
         <Button text="Войти" onAction="#login"/>
     </HBox>
-    <HBox fx:id="logPassPanel">
-        <TextField fx:id="loginField" HBox.hgrow="ALWAYS" promptText="Укажите логин"/>
-        <TextField fx:id="passwordField" HBox.hgrow="ALWAYS" promptText="Укажите пароль"/>
-        <Button text="Войти под логином и паролем" onAction="#receiveNick"/>
-    </HBox>
-    <HBox fx:id="exitPanel">
-        <Button text="Logout" HBox.hgrow="ALWAYS" onAction="#logOut"/>
-    </HBox>
+
     <HBox VBox.vgrow="ALWAYS">
         <TextArea fx:id="msgArea" HBox.hgrow="ALWAYS" editable="false" wrapText="true"/>
         <ListView fx:id="clientsList" prefWidth="150" maxWidth="150" minWidth="150"/>

@@ -19,16 +19,19 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
 
     @FXML
-    TextField msgField, usernameField, loginField, passwordField;
+    TextField msgField, loginField;
 
     @FXML
     TextArea msgArea;
 
     @FXML
-    HBox loginPanel, msgPanel, exitPanel, logPassPanel;
+    HBox loginPanel, msgPanel;
 
     @FXML
     ListView<String> clientsList;
+
+    @FXML
+    PasswordField passwordField;
 
     private String username;
     private Socket socket;
@@ -37,30 +40,13 @@ public class Controller implements Initializable {
 
     public void setUsername(String username) {
         this.username = username;
-        if (username != null) {
-            usernameField.clear();
-            loginPanel.setVisible(false);
-            loginPanel.setManaged(false);
-            logPassPanel.setVisible(false);
-            logPassPanel.setManaged(false);
-            msgPanel.setVisible(true);
-            msgPanel.setManaged(true);
-            clientsList.setVisible(true);
-            clientsList.setManaged(true);
-            exitPanel.setVisible(true);
-            exitPanel.setManaged(true);
-        } else {
-            loginPanel.setVisible(true);
-            loginPanel.setManaged(true);
-            logPassPanel.setVisible(true);
-            logPassPanel.setManaged(true);
-            msgPanel.setVisible(false);
-            msgPanel.setManaged(false);
-            clientsList.setVisible(false);
-            clientsList.setManaged(false);
-            exitPanel.setVisible(false);
-            exitPanel.setManaged(false);
-        }
+        boolean usernameIsNull = username == null;
+        loginPanel.setVisible(usernameIsNull);
+        loginPanel.setManaged(usernameIsNull);
+        msgPanel.setVisible(!usernameIsNull);
+        msgPanel.setManaged(!usernameIsNull);
+        clientsList.setVisible(!usernameIsNull);
+        clientsList.setManaged(!usernameIsNull);
     }
 
     @Override
@@ -69,47 +55,21 @@ public class Controller implements Initializable {
     }
 
     public void login() {
+        if (loginField.getText().isEmpty()) {
+            showErrorAlert("Имя пользователя не может быть пустым");
+            return;
+        }
         if (socket == null || socket.isClosed()) {
             connect();
         }
-        if (usernameField.getText().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Имя пользователя не может быть пустым", ButtonType.OK);
-            alert.showAndWait();
-            return;
-        }
         try {
-            out.writeUTF("/login " + usernameField.getText());
+            out.writeUTF("/login " + loginField.getText() + " " + passwordField.getText());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void logOut() {
-        if (socket != null || !socket.isClosed()) { // А когда все-таки какое из этих условий надо проверять?(не всегда ведь оба. А тут еще при пуше Джава предупреждает про возможный NullPointerException))
-//            try {                         вот эта вся перекличка с сервером, получается,
-//                out.writeUTF("/exit");    и не нужна, т.к. клиент отключается, а сервер
-//            } catch (IOException e) {     ловит исключение из-за пустого входящего потока
-//                e.printStackTrace();      и тоже дисконнектится?... Так ведь?
-//            }                             Сначала я все это трепетно прописала, а потом показалось, что лишнее.
-            disconnect();
-        }
-    }
-
-
-    public void receiveNick() {  // отправляем по нажанию на кнопку логин и пароль на сервер, чтобы получить ник
-        if (socket == null || socket.isClosed()) {
-            connect();
-        }
-        String login = loginField.getText();
-        String password = passwordField.getText();
-        try {
-            out.writeUTF("/logPass " + login + " " + password);
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось отправить логин и пароль", ButtonType.OK);
-            alert.showAndWait();
-        }
-    }
 
     public void connect() {
         try {
@@ -117,7 +77,7 @@ public class Controller implements Initializable {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             Thread t = new Thread(() -> {
-                try {
+                try { //цикл авторизации
                     while (true) {
                         String msg = in.readUTF();
                         if (msg.startsWith("/login_ok")) {
@@ -131,13 +91,10 @@ public class Controller implements Initializable {
 
                     }
 
-                    while (true) {
+                    while (true) { // цикл общения
                         String msg = in.readUTF();
+                        // todo вынести этот блок
                         if (msg.startsWith("/")) {
-                            if (msg.startsWith("/new_nick ")) { // запоминаем новый ник
-                                setUsername(msg.split("\\s")[1]);
-                                continue;
-                            }
                             if (msg.startsWith("/clients_list ")) {
                                 String[] tokens = msg.split("\\s");
 
@@ -160,9 +117,8 @@ public class Controller implements Initializable {
             });
             t.start();
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Невозможно подключиться к серверу", ButtonType.OK);
-            alert.showAndWait();
-        }
+            showErrorAlert("Невозможно подключиться к серверу");
+          }
     }
 
     public void sendMsg() {
@@ -173,8 +129,7 @@ public class Controller implements Initializable {
                 msgField.requestFocus();
             }
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалость отправить сообщение", ButtonType.OK);
-            alert.showAndWait();
+            showErrorAlert("Не удалость отправить сообщение");
         }
     }
 
@@ -187,6 +142,14 @@ public class Controller implements Initializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void showErrorAlert (String message){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.setTitle("March-chat FX");
+        alert.setHeaderText(null);
+        alert.showAndWait();
     }
 
 
