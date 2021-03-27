@@ -38,7 +38,9 @@ public class ClientHandler {
                         String login = tokens[1];
                         String password = tokens[2];
 
-                        String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+                        //String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+                        String userNickname = server.getDatabaseAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+
 
                         if (userNickname==null){
                             sendMessage("/login_failed Введен некорректный логин/пароль");
@@ -100,7 +102,8 @@ public class ClientHandler {
                 sendMessage("Server: Такой никнейм занят");
                 return;
             }
-            server.getAuthenticationProvider().changeNickname(username, newNickname);
+            //server.getAuthenticationProvider().changeNickname(username, newNickname);
+            server.getDatabaseAuthenticationProvider().changeNickname(username, newNickname);
             username = newNickname;
             sendMessage("Server: Ваш никнейм изменен на " + newNickname);
             server.broadcastClientsList();

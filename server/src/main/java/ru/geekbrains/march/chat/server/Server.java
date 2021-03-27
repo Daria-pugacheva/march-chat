@@ -10,16 +10,23 @@ import java.util.List;
 public class Server {
     private int port;
     private List<ClientHandler> clients;
-    private AuthenticationProvider authenticationProvider;
+    //private AuthenticationProvider authenticationProvider;
+    private DatabaseAuthenticationProvider databaseAuthenticationProvider;
 
-    public AuthenticationProvider getAuthenticationProvider() {
-        return authenticationProvider;
+//    public AuthenticationProvider getAuthenticationProvider() {
+//        return authenticationProvider;
+//    }
+
+    public DatabaseAuthenticationProvider getDatabaseAuthenticationProvider() {
+        return databaseAuthenticationProvider;
     }
 
     public Server(int port) {
         this.port = port;
         this.clients = new ArrayList<>();
-        this.authenticationProvider = new InMemoryAuthenticationProvider();
+        //this.authenticationProvider = new InMemoryAuthenticationProvider();
+        this.databaseAuthenticationProvider = new DatabaseAuthenticationProvider();
+        databaseAuthenticationProvider.connect(); // УБРАТЬ THIS??
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен на порту " + port);
             while (true) {
@@ -31,6 +38,8 @@ public class Server {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            databaseAuthenticationProvider.disconnect();
         }
 
     }
