@@ -1,8 +1,9 @@
 package ru.geekbrains.march.chat.server;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +27,8 @@ public class Server {
         this.clients = new ArrayList<>();
         //this.authenticationProvider = new InMemoryAuthenticationProvider();
         this.databaseAuthenticationProvider = new DatabaseAuthenticationProvider();
-        databaseAuthenticationProvider.connect(); // УБРАТЬ THIS??
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        databaseAuthenticationProvider.connect();
+            try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен на порту " + port);
             while (true) {
                 System.out.println("Ждем нового клиента...");
@@ -48,6 +49,7 @@ public class Server {
         clients.add(clientHandler);
         broadcastMessage("Клиент " + clientHandler.getUsername() + " вошел в чат.");
         broadcastClientsList();
+        sendHistory(clientHandler); //  при регистрации клиента ему высылается история переписки
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
@@ -60,6 +62,7 @@ public class Server {
         for (ClientHandler clientHandler : clients) {
             clientHandler.sendMessage(message);
         }
+        addHistory(message); // при каждой широковещательной рассылке пополняем общую историю
 
     }
 
@@ -95,5 +98,36 @@ public class Server {
             c.sendMessage(clientsList);  // broadcastMessage (clientsList), не?
         }
     }
+// метод записи истории в файл
+    public void addHistory(String text){
+       try(OutputStreamWriter outWrite = new OutputStreamWriter(new FileOutputStream("chatHistory.txt",true))){
+           outWrite.write(text);
+           outWrite.write("\n");
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    // метода отправки истории из файла подключившемуся клиенту
+
+    public void sendHistory(ClientHandler clientHandler){
+        String historyText = null;
+        try(InputStreamReader inRead = new InputStreamReader(new FileInputStream("chatHistory.txt"))){
+            StringBuilder text = new StringBuilder("ИСТОРИЯ ПЕРЕПИСКИ:\n");
+            int x;
+            while((x=inRead.read()) != -1){
+                text.append((char)x);
+            }
+            historyText = text.toString();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        clientHandler.sendMessage(historyText);
+    }
+
+
+
+
 
 }
