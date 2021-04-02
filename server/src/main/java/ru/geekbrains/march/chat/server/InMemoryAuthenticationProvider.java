@@ -48,4 +48,23 @@ public class InMemoryAuthenticationProvider implements AuthenticationProvider{
         }
     }
 
+    @Override
+    public boolean isNickBusy(String nickname) {
+        for (User u: users) {
+            if (u.nickname.equals(nickname)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
 }

@@ -38,8 +38,8 @@ public class ClientHandler {
                         String login = tokens[1];
                         String password = tokens[2];
 
-                        //String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
-                        String userNickname = server.getDatabaseAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+                        String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+                        //String userNickname = server.getDatabaseAuthenticationProvider().getNicknameByLoginAndPassword(login,password); //- моя старая реализация
 
 
                         if (userNickname==null){
@@ -98,12 +98,12 @@ public class ClientHandler {
                 return;
             }
             String newNickname = tokens[1];
-            if ((server.isUserOnline(newNickname))){
+            if ((server.getAuthenticationProvider().isNickBusy(newNickname))){
                 sendMessage("Server: Такой никнейм занят");
                 return;
             }
-            //server.getAuthenticationProvider().changeNickname(username, newNickname);
-            server.getDatabaseAuthenticationProvider().changeNickname(username, newNickname);
+            server.getAuthenticationProvider().changeNickname(username, newNickname);
+            //server.getDatabaseAuthenticationProvider().changeNickname(username, newNickname); //- моя старая реализация
             username = newNickname;
             sendMessage("Server: Ваш никнейм изменен на " + newNickname);
             server.broadcastClientsList();

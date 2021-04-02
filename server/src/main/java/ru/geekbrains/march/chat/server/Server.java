@@ -11,23 +11,25 @@ import java.util.List;
 public class Server {
     private int port;
     private List<ClientHandler> clients;
-    //private AuthenticationProvider authenticationProvider;
-    private DatabaseAuthenticationProvider databaseAuthenticationProvider;
+    private AuthenticationProvider authenticationProvider;
+   // private DbAuthenticationProvider databaseAuthenticationProvider;  - моя старая реализация
 
-//    public AuthenticationProvider getAuthenticationProvider() {
-//        return authenticationProvider;
-//    }
-
-    public DatabaseAuthenticationProvider getDatabaseAuthenticationProvider() {
-        return databaseAuthenticationProvider;
+    public AuthenticationProvider getAuthenticationProvider() {
+        return authenticationProvider;
     }
+
+//    public DbAuthenticationProvider getDatabaseAuthenticationProvider() {
+//        return databaseAuthenticationProvider;
+//    }  - моя старая реализация
 
     public Server(int port) {
         this.port = port;
         this.clients = new ArrayList<>();
         //this.authenticationProvider = new InMemoryAuthenticationProvider();
-        this.databaseAuthenticationProvider = new DatabaseAuthenticationProvider();
-        databaseAuthenticationProvider.connect();
+        this.authenticationProvider = new DbAuthenticationProvider();
+        this.authenticationProvider.init(); // ВОПРОС: А зачем здесь this?
+        //this.databaseAuthenticationProvider = new DbAuthenticationProvider();
+        //databaseAuthenticationProvider.connect();
             try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен на порту " + port);
             while (true) {
@@ -38,10 +40,14 @@ public class Server {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            databaseAuthenticationProvider.disconnect();
-        }
+                e.printStackTrace();
+            }finally {
+                this.authenticationProvider.shutdown(); // ВОПРОС: B здесь тоже зачем this?
+            }
+
+//        } finally {
+//            databaseAuthenticationProvider.disconnect();
+//        }
 
     }
 
@@ -49,7 +55,7 @@ public class Server {
         clients.add(clientHandler);
         broadcastMessage("Клиент " + clientHandler.getUsername() + " вошел в чат.");
         broadcastClientsList();
-        sendHistory(clientHandler); //  при регистрации клиента ему высылается история переписки
+       // sendHistory(clientHandler); //  при регистрации клиента ему высылается история переписки
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
@@ -62,7 +68,7 @@ public class Server {
         for (ClientHandler clientHandler : clients) {
             clientHandler.sendMessage(message);
         }
-        addHistory(message); // при каждой широковещательной рассылке пополняем общую историю
+       // addHistory(message); // при каждой широковещательной рассылке пополняем общую историю
 
     }
 
@@ -98,33 +104,33 @@ public class Server {
             c.sendMessage(clientsList);  // broadcastMessage (clientsList), не?
         }
     }
-// метод записи истории в файл
-    public void addHistory(String text){
-       try(OutputStreamWriter outWrite = new OutputStreamWriter(new FileOutputStream("chatHistory.txt",true))){
-           outWrite.write(text);
-           outWrite.write("\n");
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    // метода отправки истории из файла подключившемуся клиенту
-
-    public void sendHistory(ClientHandler clientHandler){
-        String historyText = null;
-        try(InputStreamReader inRead = new InputStreamReader(new FileInputStream("chatHistory.txt"))){
-            StringBuilder text = new StringBuilder("ИСТОРИЯ ПЕРЕПИСКИ:\n");
-            int x;
-            while((x=inRead.read()) != -1){
-                text.append((char)x);
-            }
-            historyText = text.toString();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        clientHandler.sendMessage(historyText);
-    }
+//// метод записи истории в файл
+//    public void addHistory(String text){
+//       try(OutputStreamWriter outWrite = new OutputStreamWriter(new FileOutputStream("chatHistory.txt",true))){
+//           outWrite.write(text);
+//           outWrite.write("\n");
+//        } catch (IOException e){
+//            e.printStackTrace();
+//        }
+//
+//    }
+//
+//    // метода отправки истории из файла подключившемуся клиенту
+//
+//    public void sendHistory(ClientHandler clientHandler){
+//        String historyText = null;
+//        try(InputStreamReader inRead = new InputStreamReader(new FileInputStream("chatHistory.txt"))){
+//            StringBuilder text = new StringBuilder("ИСТОРИЯ ПЕРЕПИСКИ:\n");
+//            int x;
+//            while((x=inRead.read()) != -1){
+//                text.append((char)x);
+//            }
+//            historyText = text.toString();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        clientHandler.sendMessage(historyText);
+//    }
 
 
 
