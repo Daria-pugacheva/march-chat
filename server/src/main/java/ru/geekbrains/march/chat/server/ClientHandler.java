@@ -25,24 +25,25 @@ public class ClientHandler {
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
 
-        new Thread(() -> {
+        //new Thread(() -> {
+        server.getExecutorService().execute(()-> { // БУДЕТ ЗАПУСКАТЬСЯ ПОТОМ ИЗ ПУЛА ПОТОКОВ ПО НЕОБХОДИМОСТИ
             try {
                 while (true) {
                     String msg = in.readUTF();
                     if (msg.startsWith("/login")) {
-                        String [] tokens = msg.split("\\s+");
-                        if (tokens.length!=3){
+                        String[] tokens = msg.split("\\s+");
+                        if (tokens.length != 3) {
                             sendMessage("/login_failed Введите логин и пароль");
                             continue;
                         }
                         String login = tokens[1];
                         String password = tokens[2];
 
-                        String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login,password);
+                        String userNickname = server.getAuthenticationProvider().getNicknameByLoginAndPassword(login, password);
                         //String userNickname = server.getDatabaseAuthenticationProvider().getNicknameByLoginAndPassword(login,password); //- моя старая реализация
 
 
-                        if (userNickname==null){
+                        if (userNickname == null) {
                             sendMessage("/login_failed Введен некорректный логин/пароль");
                             continue;
                         }
@@ -70,7 +71,8 @@ public class ClientHandler {
             } finally {
                 disconnect();
             }
-        }).start();
+            // }).start();
+        }); // У НАС УЖЕ ИСПОЛНЕНИЕ ЧЕРЕЗ ПУЛ ПОТОКОВ, ТАК ЧТО НИКАКОЙ СТАРТ НЕ НУЖЕН
     }
 
     public void sendMessage(String message) {
