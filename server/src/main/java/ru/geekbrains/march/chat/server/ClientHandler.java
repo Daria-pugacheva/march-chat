@@ -1,5 +1,9 @@
 package ru.geekbrains.march.chat.server;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,6 +17,7 @@ public class ClientHandler {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
+    private static final Logger LOGGER = LogManager.getLogger(ClientHandler.class); // создали логгер
 
     public String getUsername() {
         return username;
@@ -34,6 +39,7 @@ public class ClientHandler {
                         String[] tokens = msg.split("\\s+");
                         if (tokens.length != 3) {
                             sendMessage("/login_failed Введите логин и пароль");
+                            LOGGER.error("Авторизация не удалась. Введите логин и пароль");
                             continue;
                         }
                         String login = tokens[1];
@@ -45,10 +51,12 @@ public class ClientHandler {
 
                         if (userNickname == null) {
                             sendMessage("/login_failed Введен некорректный логин/пароль");
+                            LOGGER.error("Авторизация не удалась. Введен некорректный логин/пароль");
                             continue;
                         }
                         if (server.isUserOnline(userNickname)) {
                             sendMessage("/login_failed Учетная запись занята другим пользователем");
+                            LOGGER.error("Авторизация не удалась. Учетная запись занята другим пользователем");
                             continue;
                         }
                         username = userNickname;
@@ -66,9 +74,11 @@ public class ClientHandler {
                         continue;
                     }
                     server.broadcastMessage(username + ": " + msg);
+                    LOGGER.info("Клиент " + username + " прислал сообщение: " + msg);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace(); // заменяем на логгер
+                LOGGER.throwing(Level.FATAL,e);
             } finally {
                 disconnect();
             }
@@ -80,6 +90,7 @@ public class ClientHandler {
         try {
             out.writeUTF(message);
         } catch (IOException e) {
+            LOGGER.throwing(Level.FATAL,e); // Добавили логгер
             disconnect();
         }
     }
@@ -89,6 +100,7 @@ public class ClientHandler {
             String[] tokens = cmd.split("\\s+", 3);
             if (tokens.length !=3){
                 sendMessage("Server: Введена некорректная команда");
+                LOGGER.error("Введена некорректная команда при отправке личного сообщения"); // Добавили логгирование некорректной команды
                 return;
             }
             server.sendPrivateMessage(this, tokens[1], tokens[2]);
@@ -98,17 +110,20 @@ public class ClientHandler {
             String [] tokens = cmd.split("\\s+");
             if (tokens.length !=2){
                 sendMessage("Server: Введена некорректная команда");
+                LOGGER.error("Введена некорректная команда при смене ника"); // Добавили логгирование некорректной команды
                 return;
             }
             String newNickname = tokens[1];
             if ((server.getAuthenticationProvider().isNickBusy(newNickname))){
                 sendMessage("Server: Такой никнейм занят");
+                LOGGER.error("Ошибка при смене ника - такой никнейм занят"); // Добавили логгирование некорректной команды
                 return;
             }
             server.getAuthenticationProvider().changeNickname(username, newNickname);
             //server.getDatabaseAuthenticationProvider().changeNickname(username, newNickname); //- моя старая реализация
             username = newNickname;
             sendMessage("Server: Ваш никнейм изменен на " + newNickname);
+            LOGGER.info("Ваш никнейм изменен на " + newNickname); // логирование смены ника
             server.broadcastClientsList();
         }
     }

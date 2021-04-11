@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--<Configuration xmlns="http://logging.apache.org/log4j/2.0/config"> // убрано, потому что с этой настройкой-->
+<!--    неактивный вариант File  для Аппендеров-->
+
+<Configuration status = 'FATAL'>
+    <Properties>
+        <Property name="basePath">logs</Property>
+    </Properties>
+
+    <Appenders>
+
+        <File name="FILE" fileName="${basePath}/serverlogfile.log" append="true">
+            <PatternLayout pattern="%-5p %d{yyyy-MM-dd HH:mm:ss} [%t] %C (%F:%L) - %m%n" />
+        </File>
+
+<!--        консольный вывод также оставляю для удобства. В нем чуть сокращена информация-->
+
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%m (%-5p %d{yyyy-MM-dd HH:mm:ss} [%t] (%F:%L)) %n" />
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+<!--        В данном случае логирование у нас только на серверной стороне настроено. Наверное нет смысла -->
+<!--        дублировать вывод информации в корневом логгере?-->
+        <Root level="fatal">
+<!--            <AppenderRef ref="STDOUT" /> -->
+<!--            <AppenderRef ref="FILE" />-->
+        </Root>
+<!--        Выводим максимум информации, т.к. пока режим интенсивной отладки.-->
+<!--        Дублирую вывод:  и в файл и в консоль для удобства-->
+        <Logger name="ru.geekbrains.march.chat.server" level="trace">
+            <AppenderRef ref="STDOUT" />
+            <AppenderRef ref="FILE" />
+        </Logger>
+
+    </Loggers>
+</Configuration>

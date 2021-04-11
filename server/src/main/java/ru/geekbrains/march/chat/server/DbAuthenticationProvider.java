@@ -1,5 +1,8 @@
 package ru.geekbrains.march.chat.server;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.sqlite.core.DB;
 
 import java.sql.*;
@@ -7,6 +10,7 @@ import java.sql.*;
 public class DbAuthenticationProvider implements AuthenticationProvider {
 
     private DbConnection dbConnection;
+    private static final Logger LOGGER = LogManager.getLogger(DbAuthenticationProvider.class);
 
     @Override
     public void init() {
@@ -23,7 +27,8 @@ public class DbAuthenticationProvider implements AuthenticationProvider {
                 return rs.getString("nickname");
             }
         }catch (SQLException e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            LOGGER.throwing(Level.FATAL, e); // создали логгер
         }
         return null;
     }
@@ -34,7 +39,8 @@ public class DbAuthenticationProvider implements AuthenticationProvider {
         try {
             dbConnection.getStmt().executeQuery(query);
         }catch (SQLException e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            LOGGER.throwing(Level.FATAL, e); // создали логгер
         }
     }
 
@@ -46,7 +52,8 @@ public class DbAuthenticationProvider implements AuthenticationProvider {
                 return true;
             }
         }catch (SQLException e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            LOGGER.throwing(Level.FATAL, e); // создали логгер
         }
         return false;
     }

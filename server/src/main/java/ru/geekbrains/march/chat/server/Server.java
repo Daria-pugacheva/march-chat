@@ -1,5 +1,9 @@
 package ru.geekbrains.march.chat.server;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,6 +25,7 @@ public class Server {
     public AuthenticationProvider getAuthenticationProvider() {
         return authenticationProvider;
     }
+    private static final Logger LOGGER= LogManager.getLogger(Server.class); // создали логгер для сервера
 
    /// public ExecutorService getExecutorService(){ return executorService; } //ГЕТТЕР, ЧТОБЫ МОЖНО БЫЛО ОБРАЩАТЬСЯ
 
@@ -38,16 +43,21 @@ public class Server {
         //databaseAuthenticationProvider.connect();
        /// this.executorService = Executors.newCachedThreadPool(); //СОЗДАЕМ ПУЛ ПОТОКОВ
             try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Сервер запущен на порту " + port);
+            //System.out.println("Сервер запущен на порту " + port); // заменили на логгер
+                LOGGER.info("Сервер запущен на порту " + port); // инфоормационный логгер
             while (true) {
-                System.out.println("Ждем нового клиента...");
+                //System.out.println("Ждем нового клиента..."); // заменили на логгер
+                LOGGER.info("Ждем нового клиента..."); // инфоормационный логгер
                 Socket socket = serverSocket.accept();
-                System.out.println("Клиент подключился");
+                //System.out.println("Клиент подключился");// заменили на логгер
+                LOGGER.info("Клиент подключился"); // инфоормационный логгер
                 new ClientHandler(this, socket);
             }
 
         } catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace(); // заменили на логгер об ошибке
+                LOGGER.throwing(Level.FATAL, e); // логгер с инфо об ошибке
+
             }finally {
                 this.authenticationProvider.shutdown(); // ВОПРОС: И здесь тоже зачем this?
            ///     executorService.shutdown(); // ЗАКРЫВАЕМ ПУЛ, КОГДА СЕРВЕР ЗАВЕРШАТ РАБОТУ
