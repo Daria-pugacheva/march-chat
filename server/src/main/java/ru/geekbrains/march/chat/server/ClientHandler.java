@@ -25,8 +25,8 @@ public class ClientHandler {
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
 
-        //new Thread(() -> {
-        server.getExecutorService().execute(()-> { // БУДЕТ ЗАПУСКАТЬСЯ ПОТОМ ИЗ ПУЛА ПОТОКОВ ПО НЕОБХОДИМОСТИ
+        new Thread(() -> {
+        ///server.getExecutorService().execute(()-> { // БУДЕТ ЗАПУСКАТЬСЯ ПОТОМ ИЗ ПУЛА ПОТОКОВ ПО НЕОБХОДИМОСТИ
             try {
                 while (true) {
                     String msg = in.readUTF();
@@ -52,7 +52,8 @@ public class ClientHandler {
                             continue;
                         }
                         username = userNickname;
-                        sendMessage("/login_ok " + username);
+                        //sendMessage("/login_ok " + username); // было так до написания истории
+                        sendMessage("/login_ok " + login + " " + username);
                         server.subscribe(this);
                         break;
                     }
@@ -71,8 +72,8 @@ public class ClientHandler {
             } finally {
                 disconnect();
             }
-            // }).start();
-        }); // У НАС УЖЕ ИСПОЛНЕНИЕ ЧЕРЕЗ ПУЛ ПОТОКОВ, ТАК ЧТО НИКАКОЙ СТАРТ НЕ НУЖЕН
+            }).start();
+       /// }); // У НАС УЖЕ ИСПОЛНЕНИЕ ЧЕРЕЗ ПУЛ ПОТОКОВ, ТАК ЧТО НИКАКОЙ СТАРТ НЕ НУЖЕН
     }
 
     public void sendMessage(String message) {

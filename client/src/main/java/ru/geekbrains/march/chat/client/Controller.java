@@ -37,6 +37,7 @@ public class Controller implements Initializable {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
+    private HistoryManager historyManager;
 
     public void setUsername(String username) {
         this.username = username;
@@ -52,6 +53,7 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setUsername(null);
+        historyManager = new HistoryManager();
     }
 
     public void login() {
@@ -81,7 +83,10 @@ public class Controller implements Initializable {
                     while (true) {
                         String msg = in.readUTF();
                         if (msg.startsWith("/login_ok")) {
-                            setUsername(msg.split("\\s")[1]);
+                            setUsername(msg.split("\\s")[2]);
+                            historyManager.init(msg.split("\\s")[1]);
+                            msgArea.clear();
+                            msgArea.appendText(historyManager.load());
                             break;
                         }
                         if (msg.startsWith("/login_failed")) {
@@ -107,6 +112,7 @@ public class Controller implements Initializable {
                             }
                             continue;
                         }
+                        historyManager.write(msg + "\n");
                         msgArea.appendText(msg + "\n");
                     }
                 } catch (IOException e) {
@@ -136,6 +142,7 @@ public class Controller implements Initializable {
     public void disconnect() {
         if (socket != null) {
             setUsername(null);
+            historyManager.close();
             try {
                 socket.close();
             } catch (IOException e) {

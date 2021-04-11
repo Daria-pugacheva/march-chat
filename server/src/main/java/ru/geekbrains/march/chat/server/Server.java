@@ -16,13 +16,13 @@ public class Server {
     private List<ClientHandler> clients;
     private AuthenticationProvider authenticationProvider;
    // private DbAuthenticationProvider databaseAuthenticationProvider;  - моя старая реализация
-    private ExecutorService executorService; // У СЕРВЕРА ЗАДАЕМ ПОЛЕ ПУЛА ПОТОКОВ, КОТОРЫЙ БУДЕМ ИСПОЛЬЗОВАТЬ
+    ///private ExecutorService executorService; // У СЕРВЕРА ЗАДАЕМ ПОЛЕ ПУЛА ПОТОКОВ, КОТОРЫЙ БУДЕМ ИСПОЛЬЗОВАТЬ
 
     public AuthenticationProvider getAuthenticationProvider() {
         return authenticationProvider;
     }
 
-    public ExecutorService getExecutorService(){ return executorService; } //ГЕТТЕР, ЧТОБЫ МОЖНО БЫЛО ОБРАЩАТЬСЯ
+   /// public ExecutorService getExecutorService(){ return executorService; } //ГЕТТЕР, ЧТОБЫ МОЖНО БЫЛО ОБРАЩАТЬСЯ
 
 //    public DbAuthenticationProvider getDatabaseAuthenticationProvider() {
 //        return databaseAuthenticationProvider;
@@ -36,7 +36,7 @@ public class Server {
         this.authenticationProvider.init(); // ВОПРОС: А зачем здесь this?
         //this.databaseAuthenticationProvider = new DbAuthenticationProvider();
         //databaseAuthenticationProvider.connect();
-        this.executorService = Executors.newCachedThreadPool(); //СОЗДАЕМ ПУЛ ПОТОКОВ
+       /// this.executorService = Executors.newCachedThreadPool(); //СОЗДАЕМ ПУЛ ПОТОКОВ
             try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен на порту " + port);
             while (true) {
@@ -50,7 +50,7 @@ public class Server {
                 e.printStackTrace();
             }finally {
                 this.authenticationProvider.shutdown(); // ВОПРОС: И здесь тоже зачем this?
-                executorService.shutdown(); // ЗАКРЫВАЕМ ПУЛ, КОГДА СЕРВЕР ЗАВЕРШАТ РАБОТУ
+           ///     executorService.shutdown(); // ЗАКРЫВАЕМ ПУЛ, КОГДА СЕРВЕР ЗАВЕРШАТ РАБОТУ
             }
 
 //        } finally {
